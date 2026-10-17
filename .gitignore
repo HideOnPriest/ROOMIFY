@@ -1,0 +1,54 @@
+# Wyniki kompilacji .NET i ustawienia Visual Studio.
+[Bb]in/
+[Oo]bj/
+.vs/
+TestResults/
+*.dll
+*.exe
+*.pdb
+*.nupkg
+*.snupkg
+*.user
+*.suo
+
+# Angular / Node i pokrycie kodu.
+node_modules/
+dist/
+.angular/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# Sekrety i lokalne konfiguracje; wzorzec pozostaje wersjonowany.
+.env
+.env.local
+.env.*.local
+!.env.example
+secrets.json
+appsettings.Local.json
+appsettings.*.Local.json
+*.pfx
+*.p12
+*.key
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Wyniki testów i mutacji; nie dotyczy kodu testów ani migracji.
+playwright-report/
+test-results/
+artifacts/
+StrykerOutput/
+stryker-reports/
+reports/mutation/
+
+# Lokalne dane i nadpisania Dockera; definicje infrastruktury są wersjonowane.
+infra/postgres/data/
+docker-compose.override.yml
+docker-compose.override.yaml
+compose.override.yml
+compose.override.yaml
+*.log
+.DS_Store
+Thumbs.db

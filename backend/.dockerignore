@@ -1,0 +1,22 @@
+# Do kontekstu trafiają źródła i metadane, bez lokalnych wyników i sekretów.
+**/bin
+**/obj
+**/TestResults
+**/coverage
+**/.vs
+**/.vscode
+**/.idea
+**/.git
+**/.env
+**/.env.*
+**/secrets.json
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/*.pfx
+**/*.p12
+**/*.key
+**/*.user
+**/*.suo
+tests
+artifacts
+**/*.log

@@ -1,0 +1,22 @@
+<a class="skip-link" href="#main-content">Przejdź do treści</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" routerLink="/home" aria-label="Roomify — strona główna">
+      <span class="brand-mark" aria-hidden="true">r.</span> Roomify
+    </a>
+    <nav aria-label="Nawigacja główna">
+      <a routerLink="/home" routerLinkActive="active" ariaCurrentWhenActive="page">Strona główna</a>
+      <!-- Kolejne linki pojawią się wraz z implementacją modułów. -->
+    </nav>
+    <span class="project-label">Projekt akademicki</span>
+  </div>
+</header>
+<main id="main-content" class="container" tabindex="-1">
+  <router-outlet />
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span class="footer-brand">Roomify<span aria-hidden="true">.</span></span>
+    <p>Projekt akademicki · Programowanie i testowanie aplikacji webowych</p>
+  </div>
+</footer>

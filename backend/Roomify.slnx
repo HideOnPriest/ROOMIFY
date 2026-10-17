@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Roomify.Api/Roomify.Api.csproj" />
+    <Project Path="src/Roomify.Application/Roomify.Application.csproj" />
+    <Project Path="src/Roomify.Domain/Roomify.Domain.csproj" />
+    <Project Path="src/Roomify.Infrastructure/Roomify.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Roomify.Api.IntegrationTests/Roomify.Api.IntegrationTests.csproj" />
+    <Project Path="tests/Roomify.Application.UnitTests/Roomify.Application.UnitTests.csproj" />
+    <Project Path="tests/Roomify.Domain.UnitTests/Roomify.Domain.UnitTests.csproj" />
+  </Folder>
+</Solution>

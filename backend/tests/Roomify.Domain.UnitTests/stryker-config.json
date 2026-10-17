@@ -1,0 +1,17 @@
+{
+  "stryker-config": {
+    "project": "Roomify.Domain.csproj",
+    "test-projects": ["Roomify.Domain.UnitTests.csproj"],
+    "mutate": [
+      "**/*.cs",
+      "!**/bin/**",
+      "!**/obj/**",
+      "!**/Migrations/**",
+      "!**/*.g.cs",
+      "!**/*.g.i.cs",
+      "!**/*.Designer.cs",
+      "!**/*.generated.cs"
+    ],
+    "reporters": ["progress", "html", "json"]
+  }
+}

@@ -1,0 +1,25 @@
+# Tekst jest normalizowany do LF; skrypty Windows wymagają CRLF w checkout.
+* text=auto eol=lf
+*.md text
+*.cs text
+*.csproj text
+*.slnx text
+*.ts text
+*.html text
+*.css text
+*.scss text
+*.json text
+*.yml text
+*.yaml text
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary

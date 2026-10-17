@@ -1,0 +1,121 @@
+:host {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+}
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.header-inner {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  gap: 40px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: -1px;
+  text-decoration: none;
+}
+.brand-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--ink);
+  color: white;
+  font-size: 25px;
+}
+nav {
+  margin-left: auto;
+}
+nav a {
+  display: inline-block;
+  padding: 10px 0;
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+nav a.active {
+  color: var(--ink);
+  border-bottom: 2px solid var(--accent);
+}
+.project-label {
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+main {
+  flex: 1;
+  padding-block: 64px;
+}
+.site-footer {
+  border-top: 1px solid var(--line);
+}
+.footer-inner {
+  display: flex;
+  min-height: 88px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.footer-brand {
+  font-weight: 750;
+  font-size: 20px;
+  letter-spacing: -0.7px;
+}
+.footer-brand span {
+  color: var(--accent);
+}
+footer p {
+  max-width: 440px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 10;
+  padding: 12px 20px;
+  background: var(--ink);
+  color: white;
+}
+.skip-link:focus {
+  top: 12px;
+}
+@media (max-width: 640px) {
+  .header-inner {
+    min-height: 76px;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .project-label {
+    display: none;
+  }
+  main {
+    padding-block: 36px;
+  }
+  .footer-inner {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 24px;
+    gap: 10px;
+  }
+  footer p {
+    text-align: left;
+    line-height: 1.7;
+  }
+}

@@ -1,0 +1,6 @@
+# Dziedziczymy konwencje repozytorium, w tym zakończenia linii LF.
+root = false
+
+[*.ts]
+quote_type = single
+ij_typescript_use_double_quotes = false
