@@ -2,7 +2,7 @@
 
 ## Zakres
 
-Istnieje szkielet ASP.NET Core Web API na .NET 10, obsługujący kontrolery MVC, wbudowane DI, konfigurację środowiskową, ILogger i Health Checks. Nie zawiera kontrolerów biznesowych, encji, przypadków użycia, integracji PostgreSQL, EF Core, Identity ani CORS. W WP-01.5 dodano trzy projekty testowe oraz publiczną częściową klasę Program dla WebApplicationFactory; opisuje je [infrastruktura testowa](../testing/README.md). Dokumenty WP-00 pozostają niezmienione.
+Backend .NET 10 obsługuje MVC, DI, konfigurację, ILogger i Health Checks. [Domain](DOMAIN.md) zawiera model, [Persistence](PERSISTENCE.md) mapowanie EF, a [Identity](IDENTITY.md) integrację użytkowników/ról i konfigurację cookies. Wspólny IdentityDbContext jest zarejestrowany bez połączenia przy starcie. Nie ma tabel, migracji, login/logout/me, kontrolerów biznesowych ani przypadków użycia. Projekty testowe i partial Program udostępniają WebApplicationFactory. WP-00 pozostaje niezmienione.
 
 ## Struktura
 
@@ -54,13 +54,13 @@ flowchart TD
     Application --> Domain
 ```
 
-Wszystkie projekty używają `net10.0`, Nullable Reference Types i Implicit Usings. Domain nie ma kodu ani pakietów. Application i Infrastructure używają wyłącznie `Microsoft.Extensions.DependencyInjection.Abstractions` 10.0.0 dla `IServiceCollection`: minimalnej zależności DI, bez odwołania do całego ASP.NET Core. API korzysta z platformy współdzielonej przez `Microsoft.NET.Sdk.Web`; MVC i Health Checks nie wymagają dodatkowych pakietów.
+Wszystkie projekty używają net10.0, nullable i implicit usings. Domain nie ma pakietów/referencji. Application zachowuje DI.Abstractions 10.0.0. Infrastructure ma EF Core/Identity.EF 10.0.9, provider Npgsql 10.0.3 i FrameworkReference Microsoft.AspNetCore.App; redundantny bezpośredni DI.Abstractions usunięto. Do Domain/Application nie dodano Identity ani EF.
 
 ## Rejestrowanie usług
 
-Dependency Injection polega na przekazywaniu obiektom zależności przez kontener zamiast samodzielnego tworzenia wszystkich zależnych obiektów. `Program.cs` wywołuje `AddApplication()` i `AddInfrastructure()` oraz rejestruje kontrolery, Problem Details i Health Checks.
+Dependency Injection przekazuje zależności przez kontener. Program.cs wywołuje AddApplication() oraz AddInfrastructure(builder.Configuration, builder.Environment) i rejestruje kontrolery, Problem Details oraz Health Checks. Infrastructure rejestruje Scoped RoomifyDbContext z UseNpgsql oraz Identity/cookies.
 
-Obie metody rozszerzeń zwracają na razie ten sam `IServiceCollection`, bez fikcyjnych usług. Rozdzielenie rejestracji pozwoli warstwom deklarować własne implementacje, podczas gdy API pozostanie miejscem składania aplikacji. Domain zawierać będzie niezależne reguły i nie wymaga konfiguracji infrastruktury ani jej rejestracji.
+AddApplication pozostaje pustym punktem rozszerzeń. AddInfrastructure(builder.Configuration, builder.Environment) rejestruje kontekst oraz standardowe usługi Identity i cookies, bez SQL i inicjalizacji schematu. API dodaje AddAuthorization i uruchamia UseRouting → UseAuthentication → UseAuthorization. /health jest publiczny; nie ma globalnej polityki ani dodatkowej kontroli PostgreSQL. Domain pozostaje niezależny.
 
 ## Obsługa żądania HTTP
 
@@ -84,7 +84,7 @@ Docelowo kontroler wywoła przypadek użycia Application, który skoordynuje reg
 - `https`: `https://localhost:7080` i `http://localhost:5080`, Development, `ASPNETCORE_HTTPS_PORT=7080`. Wymaga certyfikatu i przekierowuje HTTP na HTTPS.
 - Port `8080` jest skonfigurowany w Dockerfile i Compose. Lokalny profil CLI nadal używa `5080`. Konfigurację kontenerową opisuje [DOCKER.md](DOCKER.md); w ponownym odbiorze WP-01.6 potwierdzono działanie API, healthchecka i proxy Nginx po uruchomieniu Docker Desktop. API nadal nie łączy się z bazą.
 
-Nie zapisano connection stringa, hasła ani ustawień bazy. .NET sam nie odczytuje pliku `.env`. Certyfikat można sprawdzić przez `dotnet dev-certs https --check`; jego zaufanie konfiguruje użytkownik. Instrukcje restore, build i uruchamiania znajdują się w [README](../../README.md#uruchamianie-backendu).
+Połączenie pochodzi z ConnectionStrings:Roomify albo Database:Host/Port/Name/Username/Password; bez wartości hasła w kodzie. .NET sam nie odczytuje .env, Compose przekazuje Database__*. Lokalnie ustaw własną konfigurację procesu; szczegóły w [PERSISTENCE.md](PERSISTENCE.md). Bez konfiguracji kontekst buduje model, a /health działa; rzeczywiste zapytanie wymaga połączenia. Certyfikat sprawdza dotnet dev-certs https --check. Polecenia uruchamiania są w [README](../../README.md#uruchamianie-backendu).
 
 ## Healthcheck a testy
 
@@ -103,3 +103,7 @@ Ręczne żądanie do `/health` w WP-01.2 jest kontrolą techniczną uruchomienia
 Domain bez zależności od HTTP i bazy umożliwi izolowane testowanie reguł. Application będzie korzystać z interfejsów, dla których można później użyć Moq. Od WP-01.5 istnieją projekty jednostkowe i integracyjne. Testy HTTP korzystają z WebApplicationFactory bez bazy, a odrębny test Testcontainers sprawdza SELECT 1. Pełna integracja API z PostgreSQL pozostaje przyszła; polecenia opisuje [dokumentacja testów](../testing/README.md).
 
 Punkty rozszerzeń obejmują rejestracje usług, kontrolery i przypadki użycia, EF Core, Identity z cookies oraz dodatkowe kontrole zależności w `/health`. Nie są potrzebne do uruchomienia obecnego szkieletu. Architekturę docelową opisuje [OVERVIEW.md](OVERVIEW.md).
+
+## Aktualizacja WP-03.1 — Application
+
+Application zawiera już CreateReservationService z ICurrentUser i repozytoriami, nie tylko DI. [RESERVATION_APPLICATION.md](RESERVATION_APPLICATION.md) opisuje bieżący przypadek użycia i zależności; wcześniejsze opisy szkieletu zachowują kontekst historyczny. Infrastructure implementuje Scoped repozytoria i tłumaczenie błędów PostgreSQL. Api/Program.cs i endpointy bez zmian, brak adaptera HttpContext. Domain, mapowania i migracje nie zmieniły się. Testy: [WP03_1_REPORT.md](../testing/WP03_1_REPORT.md).

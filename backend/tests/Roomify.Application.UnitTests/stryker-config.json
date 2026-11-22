@@ -1,0 +1,29 @@
+{
+  "stryker-config": {
+    "project": "Roomify.Application.csproj",
+    "test-projects": [
+      "Roomify.Application.UnitTests.csproj"
+    ],
+    "mutate": [
+      "Reservations/CreateReservationService.cs",
+      "Reservations/UpdateReservationService.cs",
+      "Reservations/CancelReservationService.cs",
+      "Reservations/ReservationAccess.cs",
+      "Reservations/ReservationSaveResults.cs",
+      "Rooms/CreateRoomService.cs",
+      "Rooms/UpdateRoomService.cs",
+      "Rooms/RoomActivity.cs",
+      "Rooms/GetRoomByIdService.cs",
+      "Rooms/GetRoomsService.cs",
+      "Rooms/RoomRules.cs",
+      "Abstractions/ApplicationAccess.cs",
+      "Users/UserServices.cs",
+      "Users/UserRules.cs"
+    ],
+    "reporters": [
+      "progress",
+      "html",
+      "json"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
-# Testowanie Roomify — WP-01.5
+# Testowanie Roomify — WP-01 i WP-02
 
-Cel: przygotować pięć poziomów testowania bez fikcyjnej logiki biznesowej. [TEST_STRATEGY.md](../ai/TEST_STRATEGY.md) zachowuje pełną strategię WP-00, identyfikatory scenariuszy, macierz ryzyk i robocze cele jakościowe. Poniższy plan docelowy uzupełnia aktualny stan WP-01.5 opisany na końcu dokumentu.
+Cel: pięć poziomów testowania opartych na rzeczywistym zachowaniu. [TEST_STRATEGY.md](../ai/TEST_STRATEGY.md) zachowuje pełną strategię WP-00, identyfikatory scenariuszy, macierz ryzyk i robocze cele jakościowe. Plan docelowy uzupełniają historyczne wyniki WP-01 oraz [odbiór WP-02](WP02_ACCEPTANCE_REPORT.md) i [macierz FR/BR](REQUIREMENTS_TRACEABILITY.md). Macierz implementowanych BR i testów domenowych jest w [DOMAIN.md](../architecture/DOMAIN.md#przykłady-graniczne-i-powiązania-z-wp-00).
 
 ## Unit Tests — testy jednostkowe
 
@@ -42,10 +42,10 @@ Przyszłe testy będą odwoływać się do `FR-*`, `NFR-*`, `BR-*` oraz scenariu
 
 | Poziom | Narzędzia i obecny zakres | Szczegóły |
 |---|---|---|
-| Unit backend | xUnit, Test SDK, coverlet; dwa projekty bez przypadków do czasu WP-03 | [UNIT_TESTS.md](UNIT_TESTS.md) |
+| Unit backend | xUnit, Test SDK, coverlet; Domain 116, Application 87 przypadków | [UNIT_TESTS.md](UNIT_TESTS.md) |
 | Unit frontend | Vitest, TestBed, jsdom, coverage-v8; zachowane 5 testów | [UNIT_TESTS.md](UNIT_TESTS.md) |
-| Integration | WebApplicationFactory: 3 przypadki HTTP; Testcontainers i Npgsql: osobny SELECT 1 | [INTEGRATION_TESTS.md](INTEGRATION_TESTS.md) |
-| Mutation | Lokalny Stryker.NET 5.0.0, konfiguracja Domain; score N/A | [MUTATION_TESTS.md](MUTATION_TESTS.md) |
+| Integration | 159 przypadków: 75 bez Dockera i 84 PostgreSQL, w tym 21 nowych WP-03.2 | [INTEGRATION_TESTS.md](INTEGRATION_TESTS.md) |
+| Mutation | Stryker.NET 5.0.0, Application Create/Update/Cancel/Access/SaveResults: 100%, 63 Killed; Domain historyczne WP-02.5 | [MUTATION_TESTS.md](MUTATION_TESTS.md) |
 | E2E | Playwright/Chromium, dwa scenariusze przez Angular Dev Server | [E2E_TESTS.md](E2E_TESTS.md) |
 | Manual | Przeglądarka, szablon i trzy scenariusze NOT RUN | [MANUAL_TESTS.md](MANUAL_TESTS.md) |
 
@@ -71,15 +71,23 @@ npm run e2e:report
 
 Nie trzeba uruchamiać całości naraz: `dotnet test backend/Roomify.slnx` obejmuje również Dockera. Vitest jawnie wyklucza `e2e/**`, a Playwright wybiera tylko `e2e/`.
 
-Wyniki xUnit zapisuje `--logger "trx;LogFileName=api.trx" --results-directory artifacts/test-results/api`. Używaj oddzielnych nazw dla jednostek, HTTP i PostgreSQL. Pokrycie .NET zapewnia dołączony coverlet przez `--collect:"XPlat Code Coverage"`, zapisując `coverage.cobertura.xml` w katalogu wyników. Miarodajne pokrycie domeny powstanie wraz z jej logiką.
+Wyniki xUnit zapisuje `--logger "trx;LogFileName=api.trx" --results-directory artifacts/test-results/api`. Używaj oddzielnych nazw dla jednostek, HTTP i PostgreSQL. Pokrycie .NET zapewnia dołączony coverlet przez `--collect:"XPlat Code Coverage"`, zapisując `coverage.cobertura.xml` w katalogu wyników. Aktualny pomiar domeny WP-02.5: 160/160 linii i 38/38 gałęzi; nie obejmuje całego rozwiązania.
 
 Vitest wypisuje wynik w konsoli i tworzy coverage pod `frontend/coverage/`. Playwright zapisuje HTML w `frontend/playwright-report/` i artefakty błędów w `frontend/test-results/`. Stryker będzie tworzyć lokalne HTML/JSON w `artifacts/mutation/`. Wszystkie te katalogi są ignorowane przez Git; nie dodano agregatora ani CI. Nie umieszczaj w raportach sekretów.
 
-PASS oznacza rzeczywiste powodzenie asercji, FAIL niepowodzenie, BLOCKED przeszkodę środowiskową w raporcie pracy, a NOT RUN brak wykonania. Runner zapisuje niedostępny Docker jako failed, bez automatycznego maskowania. Zero przypadków jednostkowych nie oznacza zaliczenia domeny. Dowody bieżącej weryfikacji .NET zapisano pod ignorowanym `artifacts/wp015/`.
+PASS oznacza rzeczywiste powodzenie asercji, FAIL niepowodzenie, BLOCKED przeszkodę środowiskową w raporcie pracy, a NOT RUN brak wykonania. Runner zapisuje niedostępny Docker jako failed, bez automatycznego maskowania. Zero przypadków jednostkowych nie oznacza zaliczenia domeny. Dowody bieżącej weryfikacji WP-03.2 zapisano pod ignorowanym `artifacts/wp032/`; WP-03.1 zachowuje `artifacts/wp031/`, a odbioru WP-02.5 pod `artifacts/wp025/`; artifacts/wp015 zachowuje historię.
 
 ## Obecne ograniczenia
 
-Brak kodu domenowego, EF Core, Identity i integracji API z bazą. Test SELECT 1 wymaga działającego Dockera; po uruchomieniu Desktop potwierdzono jego sukces w ponownym odbiorze WP-01.6. E2E obejmują aktualny frontend, bez API i bazy. Scenariusze ręczne pozostają NOT RUN. Moq zostanie dodany dopiero przy rzeczywistej potrzebie mockowania. Wysokie pokrycie szkieletu nie dowodzi jakości przyszłych funkcji. Aktualny odbiór środowiska przedstawia [audyt WP-01.6](WP01_AUDIT_REPORT.md).
+Domain, mapowania/Identity i rzeczywisty schemat InitialCreate są zweryfikowane. Odbiór WP-02.5: [historyczne READY WITH WARNINGS](WP02_ACCEPTANCE_REPORT.md), 224/224. Bieżący [WP-03.1](WP03_1_REPORT.md): 280/280 (Domain 110, Application 32, integracyjne 138). Testcontainers wykonuje migracje, round-trip, ograniczenia i powtarzane transakcje; developerka pozostaje niezmieniona. Application tworzy, edytuje i anuluje, sprawdzając właściciela/admina i wersję; brak kont developerskich, endpointów logowania/danych i pełnej autoryzacji. Stryker 93,46% z 7 Survived; coverage Domain 100% linii/gałęzi. 40P01 wymaga przyszłej obsługi retry. E2E biznesowe i manualne pozostają poza odbiorem, Application 32 przypadki. CSRF i egzekwowanie IsActive w sesjach wymagane przed udostępnieniem logowania. WP-03.1 wykonano, WP-03.2 nie rozpoczęto.
+
+## Wyniki WP-02.2
+
+Debug/Release i restore PASS bez ostrzeżeń/błędów. Domain **87/87**, metadane/DI/materializacja EF **35/35**, HTTP **3/3**; łącznie **125/125** w końcowej regresji. EF wybiera Category=PersistenceMetadata, a wszystkie testy bez Dockera wybiera RequiresDocker=false. Nie wykonano migracji/EnsureCreated ani zmian bazy. Polityka UTC, mapowanie pól i granice dowodów są w [PERSISTENCE.md](../architecture/PERSISTENCE.md).
+
+## Wyniki WP-02.3
+
+Restore i Debug/Release bez ostrzeżeń/błędów; **159/159**: Domain 87, EF 35, Identity/security 34, HTTP 3. Testy Identity wybiera Category=IdentityConfiguration; RequiresDocker=false obejmuje teraz 72 przypadki integracyjne. Potwierdzono rzeczywiste Set-Cookie, 401/403 bez redirectów, publiczny /health i brak endpointów rejestracji w zwykłym hoście. Baza nie została zmieniona. [IDENTITY.md](../architecture/IDENTITY.md) zawiera model, polityki i granice dowodów.
 
 ## Wyniki weryfikacji WP-01.5
 
@@ -97,3 +105,22 @@ Raport HTML E2E jest w `frontend/playwright-report/index.html`. Obecny coverage 
 ## Ponowny odbiór WP-01.6 — 17.10.2026
 
 Historyczne wyniki WP-01.5 powyżej zachowano. Po uruchomieniu Docker Desktop: RequiresDocker=true **1/1 PASS**, RequiresDocker=false **3/3 PASS**. Potwierdzono oddzielny kontener PostgreSQL, losowy port i wolumen testowy, usunięcie kontenera oraz niezmienność logicznego dumpa developerskiej bazy przed i po teście. Compose build/config/up, zdrowie API i bazy oraz HTTP przez Nginx przeszły. Vitest 5/5 i Playwright 2/2 zachowują wyniki pierwotnego audytu; nie powtarzano ich przy zmianach wyłącznie dokumentacyjnych. Status środowiska: **READY WITH WARNINGS**, ograniczenia manualne i mutacyjne pozostają jawne. Dowody: ignorowany `artifacts/wp016-recheck/`; [przekazanie WP-02](../ai/WP02_HANDOFF.md).
+
+## WP-03.1 — bieżące komendy i granice
+
+`dotnet test backend/tests/Roomify.Application.UnitTests --no-restore` uruchamia 32 przypadki bez bazy, `dotnet test backend/Roomify.slnx --no-restore` cały backend, także 63 PostgreSQL. Nowe filtry integracyjne: Category=ReservationApplication (21) i Category=ApplicationComposition (3); cały RequiresDocker=false (75). Raport z 26 AC i pierwszymi niepowodzeniami: [WP03_1_REPORT.md](WP03_1_REPORT.md). [RESERVATION_APPLICATION.md](../architecture/RESERVATION_APPLICATION.md) opisuje sekwencję, kontrakty i brak adaptera HTTP. 40P01 ma odrębny InfrastructureFailure, bez retry. Nie wykonano nowych E2E/manualnych/pokrycia/Domain mutation. Baza developerska zachowana bez zmian.
+
+## WP-03.2 — bieżący stan
+
+**362/362 PASS**, 25/25 AC. Domain 116, Application 87, integracyjne 159. `dotnet test backend/Roomify.slnx --no-restore` obejmuje wszystkie poziomy backendu, także Dockera. Filtr Category=ReservationManagement wybiera 21 nowych testów PostgreSQL. Dokumentacja i wspólny wynik: [RESERVATION_MANAGEMENT.md](../architecture/RESERVATION_MANAGEMENT.md), [raport](WP03_2_REPORT.md). Wersja shadow xmin rozróżnia ConcurrentModification od terminu Conflict; bez retry i bez zmiany właściciela/sali. Migracja mapowania przetestowana, developerka nie migrowana, dump/historia zachowane. Pierwszy nieudany test pełnej regresji i jego naprawa pozostają jawne. WP-03.3 nie rozpoczęto. Wcześniejsze liczby w sekcjach historycznych opisują tamte etapy; nowe Domain coverage/mutation, UI/E2E/manualne nie wykonywane.
+
+## Aktualizacja WP-03.3
+
+[Raport i 26 AC](WP03_3_REPORT.md), [zarządzanie salami](../architecture/ROOM_MANAGEMENT.md). Backend **469/469**: Domain 118, Application 164, integracyjne 187 = 76 bez Dockera + 111 PostgreSQL. Stryker Application 99,42%; 1 równoważny Survived. Developerka bez zmian. READY WITH WARNINGS w zakresie WP-03.3; bez HTTP/UI i bez automatycznego rozpoczęcia WP-03.4. Wcześniejsze sekcje i raporty stanowią historię.
+
+
+## Przyrost WP-03.4 — 18.10.2026
+
+**557/557 backend**: Domain 118, Application 228, integracyjne 211 (78 bez Dockera + 133 PostgreSQL). Restore/Debug/Release PASS, Stryker Application 99,17%. READY WITH WARNINGS, 30/30 AC PASS. Bez nowych migracji i bez zmian developerki. Brak produkcyjnych endpointów login/logout/me i UI; WP-03.5 nie rozpoczęto.
+
+[Pełny raport](WP03_4_REPORT.md), [architektura kont i sesji](../architecture/USER_MANAGEMENT.md). Poprzednie wyniki zachowano jako historyczne.

@@ -2,7 +2,7 @@
 
 ## Status i założenia
 
-Dokument opisuje zatwierdzoną architekturę docelową WP-01.1. W WP-01.2 utworzono cztery projekty backendu, referencje, punkty rejestracji DI, obsługę kontrolerów i `/health`; szczegóły opisuje [BACKEND.md](BACKEND.md). WP-01.3 dodaje szkielet Angular CSR, layout, strony startową i 404 oraz testy kontrolne; szczegóły opisuje [FRONTEND.md](FRONTEND.md). W WP-01.4 przygotowano Docker Compose z Nginx, API i PostgreSQL, opisany w [DOCKER.md](DOCKER.md); uruchomienie trzech usług, healthchecki i proxy potwierdzono w ponownym odbiorze WP-01.6 po uruchomieniu Docker Desktop. WP-01.5 dodaje trzy projekty testowe .NET, fixture PostgreSQL, Stryker i Playwright, opisane w [dokumentacji testowania](../testing/README.md). Funkcjonalności biznesowe, integracja EF Core i uwierzytelnianie pozostają planowane. Kontekst i wymagania pochodzą z [WP-00](../ai/PROJECT_CONTEXT.md), a decyzje technologiczne z [ADR](../decisions/README.md).
+Dokument opisuje zatwierdzoną architekturę docelową WP-01.1. W WP-01.2 utworzono cztery projekty backendu, referencje, punkty rejestracji DI, obsługę kontrolerów i `/health`; szczegóły opisuje [BACKEND.md](BACKEND.md). WP-01.3 dodaje szkielet Angular CSR, layout, strony startową i 404 oraz testy kontrolne; szczegóły opisuje [FRONTEND.md](FRONTEND.md). W WP-01.4 przygotowano Docker Compose z Nginx, API i PostgreSQL, opisany w [DOCKER.md](DOCKER.md); uruchomienie trzech usług, healthchecki i proxy potwierdzono w ponownym odbiorze WP-01.6 po uruchomieniu Docker Desktop. WP-01.5 dodaje trzy projekty testowe .NET, fixture PostgreSQL, Stryker i Playwright, opisane w [dokumentacji testowania](../testing/README.md). WP-02.1 dodaje [model domenowy](DOMAIN.md) sal i rezerwacji z testami czasu i niezmienników. WP-02.2 dodaje [DbContext, mapowania EF i DI](PERSISTENCE.md), bez tworzenia tabel. WP-02.3 dodaje [Identity z cookies](IDENTITY.md) i wspólnym kontekstem; przypadki użycia, migracje i endpointy logowania pozostają planowane. Kontekst i wymagania pochodzą z [WP-00](../ai/PROJECT_CONTEXT.md), a decyzje technologiczne z [ADR](../decisions/README.md).
 
 ## Modularny monolit
 
@@ -28,7 +28,7 @@ flowchart TD
     Application --> Domain
 ```
 
-Api jest miejscem składania zależności: wywołuje `AddApplication()` i `AddInfrastructure()`, które nie rejestrują jeszcze usług biznesowych. Docelowo powiąże interfejsy Application z implementacjami Infrastructure. Domain nie odwołuje się do HTTP, EF Core, Identity ani PostgreSQL. Referencje projektowe odpowiadają diagramowi.
+Api jest miejscem składania zależności: wywołuje `AddApplication()` i `AddInfrastructure(builder.Configuration, builder.Environment)`. Infrastructure rejestruje Scoped RoomifyDbContext z UseNpgsql bez połączenia przy starcie; Application nadal nie ma usług biznesowych. Docelowo powiąże interfejsy Application z implementacjami Infrastructure. Domain nie odwołuje się do HTTP, EF Core, Identity ani PostgreSQL. Referencje projektowe odpowiadają diagramowi.
 
 ## Przepływ komunikacji
 

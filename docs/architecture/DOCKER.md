@@ -63,7 +63,7 @@ Oficjalny PostgreSQL 18 używa `PGDATA=/var/lib/postgresql/18/docker`, a nazwany
 
 Rola wskazana przez `POSTGRES_USER` ma uprawnienia inicjalizacyjnego superużytkownika. Jest to lokalna konfiguracja demonstracyjna; przed produkcyjną integracją należy wydzielić konto o minimalnych uprawnieniach. Nie ustawiamy `POSTGRES_HOST_AUTH_METHOD=trust`.
 
-API otrzymuje przyszłą sekcję konfiguracji jako `Database__Host`, `Database__Port`, `Database__Name`, `Database__Username` i `Database__Password`. .NET odwzorowuje podwójne podkreślenia na zagnieżdżenie sekcji. Obecny kod nie odczytuje tych ustawień i nie łączy się z bazą. Oddzielne wartości nie wymagają teraz składania connection stringa z hasłem.
+API otrzymuje sekcję konfiguracji jako `Database__Host`, `Database__Port`, `Database__Name`, `Database__Username` i `Database__Password`. .NET odwzorowuje podwójne podkreślenia na zagnieżdżenie sekcji. Od WP-02.2 Infrastructure składa je przez NpgsqlConnectionStringBuilder i rejestruje DbContext z UseNpgsql, bez otwierania połączenia przy starcie. Alternatywne ConnectionStrings__Roomify ma pierwszeństwo. [PERSISTENCE.md](PERSISTENCE.md) opisuje konfigurację i testy. Nie ma migracji ani tworzenia tabel; /health nie sprawdza bazy.
 
 ## Healthchecki i kolejność startu
 

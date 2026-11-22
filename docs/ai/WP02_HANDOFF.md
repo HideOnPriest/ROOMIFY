@@ -1,5 +1,7 @@
 # Roomify — przekazanie WP-01 do WP-02
 
+> Historyczny stan przekazania z zamknięcia WP-01. Następnie wykonano WP-02.1/02.2/02.3: [aktualny status](IMPLEMENTATION_STATUS.md), [Domain](../architecture/DOMAIN.md), [EF](../architecture/PERSISTENCE.md), [Identity](../architecture/IDENTITY.md) i [raport WP-02.3](../testing/WP02_3_REPORT.md). Poniższy opis pustej domeny, braku EF/Identity i wyników N/A dotyczy chwili przekazania, nie bieżącej implementacji.
+
 Stan na 17.10.2026: **READY WITH WARNINGS**, środowisko gotowe do WP-02.1; implementacja WP-02 nie została rozpoczęta. Bieżące wyniki są w [sekcji 9 audytu](../testing/WP01_AUDIT_REPORT.md#9-ponowny-odbiór-po-uruchomieniu-docker-desktop--17102026), a stan etapów w [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md).
 
 ## Kolejność zapoznania się z projektem

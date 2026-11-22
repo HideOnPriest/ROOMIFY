@@ -4,7 +4,11 @@ Roomify to planowany system rezerwacji sal konferencyjnych i spotkań. Powstaje 
 
 ## Status
 
-WP-00: dostępna specyfikacja bazowa. WP-01.1–WP-01.5: przygotowano repozytorium, szkielety .NET 10 i Angular 22, Compose oraz infrastrukturę testową. WP-01.6 zamknięto po ponownej kontroli Docker Desktop 17.10.2026 ze statusem **READY WITH WARNINGS**: trzy usługi działają, PostgreSQL i API są healthy, proxy Nginx działa, Testcontainers przeszedł 1/1 i HTTP 3/3. W pierwotnym audycie przeszły też Vitest 5/5 i Chromium 2/2. Projekty jednostkowe backendu mają zero przypadków, mutation score jest N/A, a manualne NOT RUN. Funkcje biznesowe, EF Core, Identity, migracje i CI nadal nie istnieją. [Stan implementacji](docs/ai/IMPLEMENTATION_STATUS.md) i [przekazanie do WP-02](docs/ai/WP02_HANDOFF.md) opisują gotowość i ograniczenia.
+WP-00: niezmieniona specyfikacja bazowa. **WP-03.4 zakończono: 30/30 AC PASS, READY WITH WARNINGS.** Application zarządza kontami (utworzenie, lista, szczegóły, profil, dezaktywacja, aktywacja), salami oraz tworzeniem/edycją/anulowaniem rezerwacji. Operacje kont wymagają aktywnego administratora. Nowe konto ma wyłącznie rolę User. Identity obsługuje hasła, normalizację i role; zapis konta z rolą jest transakcyjny. Dezaktywacja zachowuje historię i unieważnia sesje. Stamp i IsActive są sprawdzane przy każdym uwierzytelnionym żądaniu; stara sesja nie wraca po aktywacji.
+
+Regresja **557/557**: Domain 118, Application 228, integracyjne 211 (78 bez Dockera, 133 PostgreSQL). Restore/Debug/Release PASS bez ostrzeżeń/błędów. Stryker badanego Application: **99,17% — 238 Killed, 2 równoważne Survived**. Developerka i schemat pozostają bez zmian; nowa migracja nie była potrzebna.
+
+[Konta, bezpieczeństwo i diagramy](docs/architecture/USER_MANAGEMENT.md), [raport WP-03.4 i 30 AC](docs/testing/WP03_4_REPORT.md), [macierz FR/BR](docs/testing/REQUIREMENTS_TRACEABILITY.md), [stan implementacji](docs/ai/IMPLEMENTATION_STATUS.md). Wcześniejsze [sale](docs/architecture/ROOM_MANAGEMENT.md) i [rezerwacje](docs/architecture/RESERVATION_MANAGEMENT.md) zachowują historię implementacji. Nadal brak produkcyjnych login/logout/me, bootstrapu pierwszego administratora, endpointów biznesowych i UI. Testowy potok cookies nie oznacza gotowego logowania HTTP. Wcześniejszy wyścig archiwizacji sali z tworzeniem rezerwacji pozostaje ograniczeniem; nie wdrażano obu migracji mapowania xmin do developerki. **WP-03.5 nie rozpoczęto.**
 
 Cztery dokumenty WP-00 w [docs/ai](docs/ai/) zachowano w kompletnej, niezmienionej wersji. Ich historyczne zapisy o proponowanym stosie i otwartej decyzji cookies/JWT należy czytać wraz z decyzjami WP-01.1 w [rejestrze ADR](docs/decisions/README.md). Zatwierdzenie stosu w WP-01.1 nie zatwierdza automatycznie pozostałych propozycji biznesowych oznaczonych `[P]`.
 
@@ -19,7 +23,7 @@ Cztery dokumenty WP-00 w [docs/ai](docs/ai/) zachowano w kompletnej, niezmienion
 | Testy backendu | xUnit, Moq, WebApplicationFactory, Testcontainers, Stryker.NET |
 | Testy frontendu i E2E | Vitest, Angular TestBed, Playwright |
 
-Backend używa `net10.0`; Application i Infrastructure odwołują się do `Microsoft.Extensions.DependencyInjection.Abstractions` 10.0.0. Frontend wykorzystuje Angular/CLI 22.2.3, TypeScript 6.0.3, RxJS 7.8.2 i Vitest 5.0.5. Przygotowano konfigurację PostgreSQL 18.6 i Docker Compose; integracja bazy przez EF Core oraz uwierzytelnianie pozostają planowane. Konkretne zależności npm zapisuje `frontend/package-lock.json`.
+Backend używa net10.0. Application zachowuje DI.Abstractions 10.0.0. Infrastructure: EF Core/Identity.EF 10.0.9, Npgsql provider 10.0.3 i FrameworkReference Microsoft.AspNetCore.App; osobny pakiet DI jest już redundantny. Frontend: Angular/CLI 22.2.3, TypeScript 6.0.3, RxJS 7.8.2, Vitest 5.0.5, package-lock.json. PostgreSQL 18.6: migracja InitialCreate zastosowana do lokalnej roomify_dev. EF/Identity i cookies są skonfigurowane; konta i logowanie HTTP pozostają przyszłe. [Schemat, ERD i migracje](docs/architecture/DATABASE.md).
 
 ## Architektura
 
@@ -110,7 +114,7 @@ dotnet tool list --local
 dotnet stryker --help
 ```
 
-Runner jednostkowy zgłasza na razie brak przypadków — nie jest to PASS domeny. Nie uruchamiaj całego `dotnet test backend/Roomify.slnx` jako szybkiej kontroli bez Dockera: obejmuje również test kontenerowy. Prawdziwe mutacje uruchamiaj po implementacji domeny, zgodnie z [MUTATION_TESTS.md](docs/testing/MUTATION_TESTS.md).
+Domain ma 87 przypadków, Application zero. RequiresDocker=false obejmuje 35 EF, 34 Identity/security i 3 HTTP, bez kont/schematu. Category=IdentityConfiguration wybiera nowe próby cookies/DI/modelu. Cały dotnet test backend/Roomify.slnx zawiera również Dockerowy SELECT 1. [MUTATION_TESTS.md](docs/testing/MUTATION_TESTS.md) zachowuje historyczną analizę, a [IDENTITY.md](docs/architecture/IDENTITY.md) opisuje bieżące testy i ograniczenia bezpieczeństwa.
 
 ## Uruchamianie backendu
 
@@ -224,7 +228,7 @@ docker compose down
 
 Zwykłe `down` zachowuje nazwany wolumen `roomify_postgres_data`, montowany pod `/var/lib/postgresql` zgodnie z wymaganiami PostgreSQL 18. Nie usuwaj wolumenów ani nie stosuj `down -v` do zwykłego zatrzymywania. Zmiana hasła w `.env` nie zmienia hasła istniejącej bazy.
 
-Gdy Docker nie odpowiada, sprawdź uruchomienie Desktop i wynik `docker version`. Przy zajętym porcie zmień port hosta w `.env` lub zatrzymaj własny proces developerski. Przy unhealthy/502 sprawdź `docker compose ps` i logi; nie kasuj danych. Baza nie jest jeszcze używana przez API — `Database__*` przygotowuje przyszłą konfigurację bez dodawania EF Core.
+Gdy Docker nie odpowiada, sprawdź uruchomienie Desktop i wynik docker version. Przy zajętym porcie zmień port hosta w .env lub zatrzymaj własny proces developerski. Przy unhealthy/502 sprawdź docker compose ps i logi; nie kasuj danych. Database__* jest odczytywane przez rejestrację DbContext w Infrastructure; nie powoduje otwierania połączenia przy starcie API ani zmiany /health. Lokalnie można zamiast tego ustawić ConnectionStrings__Roomify. Tabele są tworzone jawnie przez migracje, nie przez start API; sam schemat nie udostępnia operacji HTTP na danych.
 
 Szczegóły obrazów, healthchecków, sieci, bezpieczeństwa i trwałości danych opisuje [DOCKER.md](docs/architecture/DOCKER.md). To konfiguracja lokalna, bez TLS i gotowości do publikacji internetowej. Podczas ponownego odbioru WP-01.6 potwierdzono build z cache, działanie usług, healthchecków i proxy oraz brak zmiany logicznej zawartości developerskiej bazy przez test kontenerowy. Nie wykonywano testu odtwarzania danych ani restartu bazy.
 
@@ -232,4 +236,4 @@ Szczegóły obrazów, healthchecków, sieci, bezpieczeństwa i trwałości danyc
 
 Przeprowadzono **WP-01.6: Audyt techniczny i odbiór środowiska**. [Raport audytu](docs/testing/WP01_AUDIT_REPORT.md) zachowuje pierwotne NOT READY i zawiera ponowny odbiór po uruchomieniu Dockera: **READY WITH WARNINGS**. Blokadę Docker zamknięto rzeczywistymi kontrolami, bez zmiany logiki aplikacji i WP-00.
 
-Środowisko jest gotowe do **WP-02.1**; [WP02_HANDOFF.md](docs/ai/WP02_HANDOFF.md) przekazuje kontekst kolejnemu agentowi. WP-02 nie został rozpoczęty automatycznie.
+**WP-02.1–WP-02.4 zakończono**; [najnowszy raport z 30 AC](docs/testing/WP02_4_REPORT.md). InitialCreate obejmuje sale, rezerwacje i siedem tabel Identity; exclusion GiST chroni aktywne terminy również między transakcjami. Kontrolowany rollback sprawdzono wyłącznie w Testcontainers. [DATABASE.md](docs/architecture/DATABASE.md) opisuje ERD, indeksy, CHECK, 23P01/40P01 oraz bezpieczne polecenia migracji. **WP-02.5 zakończono**: [odbiór](docs/testing/WP02_ACCEPTANCE_REPORT.md), [śledzenie wymagań](docs/testing/REQUIREMENTS_TRACEABILITY.md). **WP-03.1 zakończono**: [Application](docs/architecture/RESERVATION_APPLICATION.md) i [raport](docs/testing/WP03_1_REPORT.md). **WP-03.2 zakończono**: [zarządzanie rezerwacjami](docs/architecture/RESERVATION_MANAGEMENT.md), [raport](docs/testing/WP03_2_REPORT.md). **WP-03.3 zakończono**: [sale](docs/architecture/ROOM_MANAGEMENT.md), [raport](docs/testing/WP03_3_REPORT.md). **WP-03.4 zakończono**: [konta](docs/architecture/USER_MANAGEMENT.md), [raport](docs/testing/WP03_4_REPORT.md). **WP-03.5 nie rozpoczęto**. Nie ma pełnego systemu logowania ani endpointów biznesowych.

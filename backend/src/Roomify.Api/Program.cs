@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // DI dostarcza obiektom zależności z kontenera. API składa rejestracje warstw;
 // niezależna od infrastruktury warstwa Domain nie wymaga takiej rejestracji.
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 
@@ -34,6 +35,8 @@ if (builder.Configuration.GetValue<int?>("HTTPS_PORT") is not null)
 
 // Routing dobiera endpoint do ścieżki HTTP. Kontrolery biznesowe powstaną później.
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
